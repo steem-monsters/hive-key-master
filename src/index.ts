@@ -83,12 +83,12 @@ export const main = async () => {
     try {
         broadcastAccounts = JSON.parse(process.env.BROADCAST_ACCOUNTS || '') || [];
     } catch (error) {
-        console.error(`Can't load accounts from .env file. Make sure it's in the correct format.`);
+        console.error(`Can't load accounts from .env file. Make sure it's in the correct format.\n`);
     }
 
     const { name, authorityType, method, privateBroadcastKey, key } = await requestInput();
 
-    const client = new Client('https://api.hive.blog');
+    const client = new Client(['https://api.hive.blog', 'https://anyx.io', 'https://api.openhive.network', 'https://hived.privex.io', 'https://api.hivekings.com']);
 
     const account = await utils.getHiveAccount(name);
     if (!account) throw Error('Account does not exist');
@@ -128,7 +128,7 @@ export const main = async () => {
     console.log('Review', { account: name, authorityType, method, pubKey: keyPair.pubKey, privateKey: !key ? keyPair.privateKey : 'omitted' });
     const confirmation = readline.keyInYN('\nDo you want to update your account keys based on the above data?');
     if (confirmation) {
-        console.log('Broadcasting to the blockchain. Please wait.');
+        console.log('\nBroadcasting to the blockchain. Please wait.');
         const result = await client.broadcast.updateAccount(data, PrivateKey.from(privateBroadcastKey));
         console.log(`Result: ${result.id ? 'SUCCESS' : 'ERROR'}`, result);
 
@@ -139,7 +139,7 @@ export const main = async () => {
             console.log(`Saved backup to backups/${Date.now()}-${name}-${method}-${authorityType}.txt`);
         }
     } else {
-        console.log('Cancelling based on user request');
+        console.log('\nCancelling based on user request');
     }
 
     process.exit(1);
