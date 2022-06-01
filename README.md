@@ -70,8 +70,6 @@ npm i
 npm start
 ```
 
-The rest
-
 ## Optional
 
 If you'd like, you can copy over the .env.example as .env and save the accounts + private keys that you often need to change keys for
