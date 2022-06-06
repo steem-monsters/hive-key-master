@@ -1,4 +1,4 @@
-import { Client, PrivateKey, AccountUpdateOperation } from '@hiveio/dhive';
+import { PrivateKey } from '@hiveio/dhive';
 import { utils } from 'splinterlands-auth';
 import * as readline from 'readline-sync';
 import fs from 'fs';
@@ -88,8 +88,6 @@ export const main = async () => {
 
     const { name, authorityType, method, privateBroadcastKey, key } = await requestInput();
 
-    const client = new Client(['https://api.hive.blog', 'https://anyx.io', 'https://api.openhive.network', 'https://hived.privex.io', 'https://api.hivekings.com']);
-
     const account = await utils.getHiveAccount(name);
     if (!account) throw Error('Account does not exist');
 
@@ -106,31 +104,12 @@ export const main = async () => {
               };
     }
 
-    const authority = account[authorityType];
-    if (method === 'remove') {
-        authority.key_auths = authority.key_auths.filter((k) => k[0] !== keyPair.pubKey);
-        if (authority.key_auths.length < 1) throw Error(`Can't reduce keys to less than 1`);
-    } else {
-        authority.key_auths.push([keyPair.pubKey, 1]);
-        authority.key_auths = authority.key_auths.sort((a, b) => a[0].localeCompare(b[0]));
-    }
-
-    const data: AccountUpdateOperation[1] = {
-        account: name,
-        json_metadata: account.json_metadata,
-        memo_key: account.memo_key,
-        active: account.active,
-        posting: account.posting,
-    };
-
-    data[authorityType] = authority;
-
     console.log('Review', { account: name, authorityType, method, pubKey: keyPair.pubKey, privateKey: !key ? keyPair.privateKey : 'omitted' });
     const confirmation = readline.keyInYN('\nDo you want to update your account keys based on the above data?');
     if (confirmation) {
         console.log('\nBroadcasting to the blockchain. Please wait.');
-        const result = await client.broadcast.updateAccount(data, PrivateKey.from(privateBroadcastKey));
-        console.log(`Result: ${result.id ? 'SUCCESS' : 'ERROR'}`, result);
+        const result = await utils.updateHiveAccountKeys(authorityType, method as any, name, keyPair.pubKey, privateBroadcastKey);
+        console.log(`Result: ${result.status === 'success' ? 'SUCCESS' : 'ERROR'}`, result.data);
 
         const confirmationBackup = readline.keyInYN('\nDo you want to save the backup?');
         if (confirmationBackup) {
