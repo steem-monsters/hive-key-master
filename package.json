@@ -25,7 +25,7 @@
         "@hiveio/dhive": "^1.2.0",
         "dotenv": "^16.0.1",
         "readline-sync": "^1.4.10",
-        "splinterlands-auth": "^0.0.16-alpha"
+        "splinterlands-auth": "^0.0.18-alpha"
     },
     "devDependencies": {
         "@types/jest": "^27.4.1",
