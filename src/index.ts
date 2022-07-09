@@ -1,5 +1,4 @@
-import { PrivateKey } from '@hiveio/dhive';
-import { utils } from 'splinterlands-auth';
+import { Client, generateKeys, generatePassword, PrivateKey, PublicKey } from 'splinterlands-dhive-sl';
 import * as readline from 'readline-sync';
 import fs from 'fs';
 import { config } from 'dotenv';
@@ -11,9 +10,10 @@ const authorityTypes: AuthorityType[] = ['posting', 'active', 'owner'];
 
 let broadcastAccounts: [string, { active?: string; owner?: string }] = [] as any;
 
+const client = new Client();
+
 export const requestInput = async () => {
     console.log('This script will allow you to add/remove posting/active keys on your Hive account');
-
     let name = '';
     if (broadcastAccounts.length > 0) {
         const bAccountIndex = readline.keyInSelect(broadcastAccounts.map((bAccount) => bAccount[0]).concat(['Enter account name']), 'Choose Hive account or enter a new account: ');
@@ -24,7 +24,7 @@ export const requestInput = async () => {
         name = readline.question(`Enter your Hive account: `);
     }
 
-    const account = await utils.getHiveAccount(name);
+    const account = await client.database.getAccount(name);
     if (!account) throw Error('Account does not exist');
 
     console.log('\n----------------------------------');
@@ -48,7 +48,7 @@ export const requestInput = async () => {
 
     let key = '';
     if (method === 'remove') {
-        const existingKeys = account[authorityType].key_auths.map((keyArray) => keyArray[0]);
+        const existingKeys = account[authorityType].key_auths.map((keyArray) => PublicKey.from(keyArray[0]).toString());
         const keyIndex = readline.keyInSelect(existingKeys, 'Choose key to remove: ');
         key = existingKeys[keyIndex];
         if (!key) process.exit(1);
@@ -88,12 +88,12 @@ export const main = async () => {
 
     const { name, authorityType, method, privateBroadcastKey, key } = await requestInput();
 
-    const account = await utils.getHiveAccount(name);
+    const account = await client.database.getAccount(name);
     if (!account) throw Error('Account does not exist');
 
     let keyPair = { privateKey: '', pubKey: '' };
     if (!key) {
-        const keys = utils.generateKeys(name, utils.generatePassword());
+        const keys = generateKeys(name, generatePassword());
         keyPair = { privateKey: keys.posting, pubKey: keys.postingPubkey };
     } else {
         keyPair = key.startsWith('STM')
@@ -108,7 +108,7 @@ export const main = async () => {
     const confirmation = readline.keyInYN('\nDo you want to update your account keys based on the above data?');
     if (confirmation) {
         console.log('\nBroadcasting to the blockchain. Please wait.');
-        const result = await utils.updateHiveAccountKeys(authorityType, method as any, name, keyPair.pubKey, privateBroadcastKey);
+        const result = await client.broadcast.updateAccountKeys(name, authorityType, method as any, keyPair.pubKey, privateBroadcastKey);
         console.log(`Result: ${result.status === 'success' ? 'SUCCESS' : 'ERROR'}`, result.data);
 
         const confirmationBackup = readline.keyInYN('\nDo you want to save the backup?');
