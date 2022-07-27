@@ -2,7 +2,7 @@
 
 ## Explanation
 
-This script makes it easy to manage authorities (keys, accounts) and set the threshold (how many authorities are needed to broadcast a transaction) to your Hive account. Use-case could be that you want to share access to your Hive account and thus Splinterlands game with other people (i.e. guild members), but need a way to revoke access, without having to change your primary key.
+This script makes it easy to manage authorities (keys, accounts) and set the threshold (how many authorities are needed to broadcast a transaction) of your Hive account. Use-case could be that you want to share access to your Hive account and thus Splinterlands game with other people (i.e. guild members), but need a way to revoke access, without having to change your primary key.
 
 ```
 > hive-key-master@1.0.0 start
