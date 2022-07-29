@@ -64,6 +64,7 @@ export const requestInput = async () => {
     let key = '';
     let method: UpdateAccountAuthorityMethod = 'add';
     let threshold = 0;
+    let weight = 1;
 
     /**
      * Show current threshold and ask for new threshold
@@ -92,6 +93,7 @@ export const requestInput = async () => {
             const existingAuths = account[role][`${authorityType}_auths`].map((a) => (authorityType === 'key' ? [PublicKey.from(a[0]).toString(), a[1]] : a));
             const keyIndex = readline.keyInSelect(existingAuths, `Choose ${authorityType} to remove: `);
             key = existingAuths[keyIndex][0];
+            weight = existingAuths[keyIndex][1];
             if (!key) process.exit(1);
         } else {
             /**
@@ -103,6 +105,11 @@ export const requestInput = async () => {
                     hideEchoBack: authorityType === 'key',
                 },
             );
+
+            console.log('\n----------------------------------');
+            weight = readline.questionInt(`\nEnter the weight of the authority. (Leave empty if you want to use the default-weight: 1) `, {
+                defaultInput: '1',
+            });
         }
     }
 
@@ -127,7 +134,7 @@ export const requestInput = async () => {
         console.log('\n----------------------------------\n');
     }
 
-    return { name, authorityType, role, key, privateBroadcastKey, method, threshold };
+    return { name, authorityType, role, key, weight, privateBroadcastKey, method, threshold };
 };
 
 export const main = async () => {
@@ -143,7 +150,7 @@ export const main = async () => {
     /**
      * Trigger command line inputs
      */
-    const { name, authorityType, role, method, privateBroadcastKey, key, threshold } = await requestInput();
+    const { name, authorityType, role, method, privateBroadcastKey, key, weight, threshold } = await requestInput();
 
     /**
      * Get account again (just in case something changed in the meantime)
@@ -194,13 +201,13 @@ export const main = async () => {
                       };
             }
             authority = keyPair.pubKey;
-            console.log('Review', { account: name, role, method, authority, privateKey: !key ? keyPair.privateKey : 'omitted' });
+            console.log('Review', { account: name, role, method, authority, privateKey: !key ? keyPair.privateKey : 'omitted', weight });
         } else {
             /**
              * Account should be added/removed
              */
             authority = key;
-            console.log('Review', { account: name, role, method, authority });
+            console.log('Review', { account: name, role, method, authority, weight });
         }
 
         const confirmation = readline.keyInYN('\nDo you want to update your account keys based on the above data?');
@@ -216,6 +223,7 @@ export const main = async () => {
                     authority,
                     authorityType,
                     role,
+                    weight,
                 },
                 privateBroadcastKey,
             );
