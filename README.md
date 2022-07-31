@@ -80,3 +80,7 @@ BROADCAST_ACCOUNTS=`[
     ["exampleAccount2", {"active": "YOUR_ACTIVE_KEY2", "owner": ""}]
 ]`
 ```
+
+## Please Read
+
+This script has been tested and is supposed to work, but please use it with caution. In any case, the author of this script will not take responsibility for bugs, if you remove the wrong keys or lock yourself out of your Hive account/lose access to funds/tokens.
